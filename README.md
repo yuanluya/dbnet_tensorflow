@@ -15,7 +15,7 @@ Remarks:
 
 **This GIT repository have submodules**, please use the follow command to clone it.
 
-	git clone git clone --recursive https://github.com/yuanluya/nlvd_TensorFlow
+	git clone git clone --recursive https://github.com/yuanluya/dbnet_TensorFlow
 
 If you have clone the repository without the `--recursive` flag, you can do `git submodule update --init --recursive` in your local repository folder.
 
