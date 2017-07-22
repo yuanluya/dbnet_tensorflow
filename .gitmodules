@@ -1,0 +1,3 @@
+[submodule "nlvd_evaluation"]
+	path = nlvd_evaluation
+	url = https://github.com/YutingZhang/nlvd_evaluation
