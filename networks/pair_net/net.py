@@ -212,7 +212,7 @@ class PairNet(BaseNet):
                 self.p_decay += dy_param_decay
             self.p_sim = np.concatenate((self.p_sim, p_sim))
             current_im_idx += self.batch_size
-
+            
             #avoid small subbatch
             if self.p_batch_sizes > current_im_idx + self.batch_size and\
                self.p_batch_sizes - current_im_idx - self.batch_size < 0.25 * self.batch_size:

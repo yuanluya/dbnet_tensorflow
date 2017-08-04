@@ -27,10 +27,15 @@ download_model()
     tar -xzf "${MODEL_TAR_BALL}" -C "${MODEL_DIR}"
 
     # move model to default directories
-    REGION_NET_DIR="./networks/image_feat_net/vgg16"
+    VGG_REGION_NET_DIR="./networks/image_feat_net/vgg16"
+    RESNET_REGION_NET_DIR="./networks/image_feat_net/resnet101"
     TEXT_NET_DIR="./networks/text_feat_net"
-    echo "Move pre-trained image network model to ${REGION_NET_DIR} ..."
-    mv ${MODEL_DIR}/*Region*.npy "${REGION_NET_DIR}"
+    echo "Move pre-trained image network model to ${VGG_REGION_NET_DIR} ..."
+    mv ${MODEL_DIR}/vgg16_Region_Feat_Net.npy "${VGG_REGION_NET_DIR}/Region_Feat_Net.npy"
+    mv ${MODEL_DIR}/vgg16_frcnn_Region_Feat_Net.npy "${VGG_REGION_NET_DIR}/frcnn_Region_Feat_Net.npy"
+    echo "Move pre-trained image network model to ${RESNET_REGION_NET_DIR} ..."
+    mv ${MODEL_DIR}/resnet101_Region_Feat_Net.npy "${RESNET_REGION_NET_DIR}/Region_Feat_Net.npy"
+    mv ${MODEL_DIR}/resnet101_frcnn_Region_Feat_Net.npy "${RESNET_REGION_NET_DIR}/frcnn_Region_Feat_Net.npy"
     echo "Move pre-trained text network model to ${TEXT_NET_DIR} ..."
     mv ${MODEL_DIR}/*Text*.npy "${TEXT_NET_DIR}"
 }

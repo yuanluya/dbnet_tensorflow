@@ -15,7 +15,7 @@ Remarks:
 
 **This GIT repository have submodules**, please use the follow command to clone it.
 
-	git clone git clone --recursive https://github.com/yuanluya/dbnet_TensorFlow
+	git clone git clone --recursive https://github.com/yuanluya/nldet_TensorFlow
 
 If you have clone the repository without the `--recursive` flag, you can do `git submodule update --init --recursive` in your local repository folder.
 
@@ -62,11 +62,10 @@ If you have admin/root access to your workstation, you can remove `--user` and u
 
 ## Pretrained Models
 
-- a VGGNet-16 faster RCNN model pretrained on PASCAL VOC
-- Our pretrained VGGNet-16 based DBNet model.
-- We plan to release the pretrained models based on ResNet-101. 
+- VGGNet-16 and RESNET-101 faster RCNN model pretrained on PASCAL VOC
+- Our pretrained VGGNet-16 and RESNET-101 based DBNet model.
 
-The VGGNet-16 based model can be obtained via [this link](http://www.ytzhang.net/files/dbnet/tensorflow/dbnet-vgg-pretrained.tar.gz). This model was trained according to the following procedure from scratch. It outperforms the model used in the paper slightly. Its evaluation results are summarized as follows.
+The pretrained  models can be obtained via [this link](http://www.ytzhang.net/files/dbnet/tensorflow/dbnet-vgg-pretrained.tar.gz). This model was trained according to the following procedure from scratch. It outperforms the model used in the paper slightly. Its evaluation results are summarized as follows.
 
 - Localization
 

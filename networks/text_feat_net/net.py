@@ -177,6 +177,7 @@ class TextFeatNet:
         else:
             self.sess.run([self.get_output],
                           feed_dict = {self.texts: self.p_texts})
+
         return
     
     def backward(self):

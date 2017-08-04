@@ -28,7 +28,7 @@ flags.DEFINE_boolean('DEBUG', False, 'whether run in tensorflow debug mode')
 flags.DEFINE_string('PHASE', 'phase1', 'phase1|phase2')
 flags.DEFINE_string('IMAGE_FINE_TUNE_MODEL', 'Region_Feat_Net.npy',
     'relative path to networks/image_feat_net/<vgg16|resnet101>/net.py depends on the choice of --IMAGE_MODEL')
-flags.DEFINE_string('TEXT_FINE_TUNE_MODEL', 'Text_Feat_Net.npy', 'relative path to networks/text_feat_net/net.py')
+flags.DEFINE_string('TEXT_FINE_TUNE_MODEL', 'vgg16_Text_Feat_Net.npy', 'relative path to networks/text_feat_net/net.py')
 flags.DEFINE_string('INIT_SNAPSHOT', 'phase1', 'init train from which phase')
 flags.DEFINE_integer('INIT_ITER', 0, 'init train from which iteration, together with INIT_SNAPSHOT')
 flags.DEFINE_string('SNAPSHOT_DIR', 'checkpoints', 'init train from which phase')

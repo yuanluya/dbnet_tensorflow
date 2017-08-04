@@ -10,11 +10,8 @@ import pdb
 
 MOVING_AVERAGE_DECAY = 0.9997
 BN_DECAY = MOVING_AVERAGE_DECAY
-BN_EPSILON = 0.001
-CONV_WEIGHT_DECAY = 0.00004
+BN_EPSILON = 1e-6
 CONV_WEIGHT_STDDEV = 0.1
-FC_WEIGHT_DECAY = 0.00004
-FC_WEIGHT_STDDEV = 0.01
 UPDATE_OPS_COLLECTION = 'resnet_update_ops'  # must be grouped with training op
 
 class Resnet101:
@@ -35,6 +32,8 @@ class Resnet101:
         self.varlist_region = []
         self.net_type = 'Resnet101'
         self.activation = tf.nn.relu
+
+        self.cvar = {}
     
     def build(self, bgr, rois, parameters,
               num_blocks=[3, 4, 23, 3],
@@ -61,16 +60,18 @@ class Resnet101:
             c['conv_filters_out'] = 64
             c['ksize'] = 7
             c['stride'] = 2
-            x = self.conv(self.bgr, c, 'conv1')
-            x = self.bn(x, c, 'bn_conv1')
-            self.scale1_feat = self.activation(x)
+            self.conv1 = self.conv(tf.pad(self.bgr,
+                [[0, 0], [3, 3], [3, 3], [0, 0]]), c, 'conv1', padding='VALID')
+            self.bn_conv1 = self.bn(self.conv1, c, 'bn_conv1')
+            self.scale1_feat = self.activation(self.bn_conv1)
 
         with tf.variable_scope('scale2'):
-            x = self._max_pool(self.scale1_feat, ksize=3, stride=2)
+            self.scale1_pool = self._max_pool(tf.pad(self.scale1_feat,
+                [[0, 0], [0, 1], [0, 1], [0, 0]]), ksize=3, stride=2)
             c['num_blocks'] = num_blocks[0]
             c['stack_stride'] = 1
             c['block_filters_internal'] = 64
-            self.scale2_feat = self.stack(x, c, '2')
+            self.scale2_feat = self.stack(self.scale1_pool, c, '2')
 
         with tf.variable_scope('scale3'):
             c['num_blocks'] = num_blocks[1]
@@ -131,14 +132,18 @@ class Resnet101:
             c['ksize'] = 1
             c['stride'] = c['block_stride']
             x = self.conv(x, c, 'res'+block_caffe_name+'_branch2a', belong)
+            self.cvar['res'+block_caffe_name+'_branch2a'] = x
             x = self.bn(x, c, 'bn'+block_caffe_name+'_branch2a', belong)
+            self.cvar['bn'+block_caffe_name+'_branch2a'] = x
             x = self.activation(x)
 
         with tf.variable_scope('b'):
             c['ksize'] = 3
             c['stride'] = 1 
             x = self.conv(x, c, 'res'+block_caffe_name+'_branch2b', belong)
+            self.cvar['res'+block_caffe_name+'_branch2b'] = x
             x = self.bn(x, c, 'bn'+block_caffe_name+'_branch2b', belong)
+            self.cvar['bn'+block_caffe_name+'_branch2b'] = x
             x = self.activation(x)
 
         with tf.variable_scope('c'):
@@ -146,7 +151,9 @@ class Resnet101:
             c['ksize'] = 1
             assert c['stride'] == 1
             x = self.conv(x, c, 'res'+block_caffe_name+'_branch2c', belong)
+            self.cvar['res'+block_caffe_name+'_branch2c'] = x
             x = self.bn(x, c, 'bn'+block_caffe_name+'_branch2c', belong)
+            self.cvar['bn'+block_caffe_name+'_branch2c'] = x
 
         with tf.variable_scope('shortcut'):
             if filters_out != filters_in or c['block_stride'] != 1:
@@ -154,7 +161,9 @@ class Resnet101:
                 c['stride'] = c['block_stride']
                 c['conv_filters_out'] = filters_out
                 shortcut = self.conv(shortcut, c, 'res'+block_caffe_name+'_branch1', belong)
+                self.cvar['res'+block_caffe_name+'_branch1'] = shortcut
                 shortcut = self.bn(shortcut, c, 'bn'+block_caffe_name+'_branch1', belong)
+                self.cvar['bn'+block_caffe_name+'_branch1'] = shortcut
 
         return self.activation(x + shortcut)
 
@@ -181,10 +190,6 @@ class Resnet101:
                             params_shape,
                             key='scale',
                             initializer=tf.ones_initializer())
-        if belong == 'conv':
-            self.varlist_conv.extend([beta, gamma])
-        elif belong == 'region':
-            self.varlist_region.extend([beta, gamma])
 
         moving_mean = self._get_variable('moving_mean',
                                     caffe_name,
@@ -198,6 +203,11 @@ class Resnet101:
                                         key='variance',
                                         initializer=tf.ones_initializer(),
                                         trainable=False)
+
+        if belong == 'conv':
+            self.varlist_conv.extend([beta, gamma, moving_mean, moving_variance])
+        elif belong == 'region':
+            self.varlist_region.extend([beta, gamma, moving_mean, moving_variance])
 
         # These ops will only be preformed when training.
         mean, variance = tf.nn.moments(x, axis)
@@ -213,7 +223,6 @@ class Resnet101:
             lambda: (moving_mean, moving_variance))
 
         x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, BN_EPSILON)
-        #x.set_shape(inputs.get_shape()) ??
 
         return x
 
@@ -241,7 +250,7 @@ class Resnet101:
             tf.add_to_collection('img_net_weight_decay', weight_decay)
         return var 
 
-    def conv(self, x, c, caffe_name, belong='conv'):
+    def conv(self, x, c, caffe_name, belong='conv', padding='SAME'):
         ksize = c['ksize']
         stride = c['stride']
         filters_out = c['conv_filters_out']
@@ -258,11 +267,13 @@ class Resnet101:
             self.varlist_conv.append(weights)
         elif belong == 'region':
             self.varlist_region.append(weights)
-        return tf.nn.conv2d(x, weights, [1, stride, stride, 1], padding='SAME')
+        if ksize == 1 and stride == 2:
+            padding = 'VALID'
+        return tf.nn.conv2d(x, weights, [1, stride, stride, 1], padding=padding)
 
 
     def _max_pool(self, x, ksize=3, stride=2):
         return tf.nn.max_pool(x,
                             ksize=[1, ksize, ksize, 1],
                             strides=[1, stride, stride, 1],
-                            padding='SAME')
+                            padding='VALID')

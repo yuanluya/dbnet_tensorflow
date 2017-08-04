@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 import os 
 import inspect
+import pdb
 
 class ImageFeatNet:
     """ Network model for Image Feat Net
