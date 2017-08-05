@@ -65,7 +65,7 @@ If you have admin/root access to your workstation, you can remove `--user` and u
 - VGGNet-16 and RESNET-101 faster RCNN model pretrained on PASCAL VOC
 - Our pretrained VGGNet-16 and RESNET-101 based DBNet model.
 
-The pretrained  models can be obtained via [this link](http://www.ytzhang.net/files/dbnet/tensorflow/dbnet-vgg-pretrained.tar.gz). This model was trained according to the following procedure from scratch. It outperforms the model used in the paper slightly. Its evaluation results are summarized as follows.
+The pretrained  models can be obtained via [this link](http://www.ytzhang.net/files/dbnet/tensorflow/dbnet-pretrained.tar.gz). This model was trained according to the following procedure from scratch. It outperforms the model used in the paper slightly. Its evaluation results are summarized as follows.
 
 - Localization
 

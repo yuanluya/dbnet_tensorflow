@@ -20,7 +20,7 @@ download_model()
     MODEL_DIR="${TMP_DIR}/pretrained_model"
     mkdir -p "${MODEL_DIR}"
 
-    MODEL_URL="http://www.ytzhang.net/files/dbnet/tensorflow/dbnet-vgg-pretrained.tar.gz"
+    MODEL_URL="http://www.ytzhang.net/files/dbnet/tensorflow/dbnet-pretrained.tar.gz"
     echo "Downloading pre-trained models ..."
     wget ${WGET_FLAG} "${MODEL_URL}" -O "${MODEL_TAR_BALL}"
     echo "Uncompressing pre-trained models ..."
