@@ -1,8 +1,10 @@
 import tensorflow as tf
 from multiprocessing import Condition, Lock, Process, Manager
 import random
+#from utils import train_ids, test_ids, get_data
 from utils import train_ids, test_ids, get_data
 import pdb
+
 
 class DataLoader:
     """ Class for loading data
@@ -48,10 +50,12 @@ class DataLoader:
                 random.shuffle(self.data_ids)
             self.batch_lock.release()
             
+            data = get_data(image_ids)
+
             self.cv_full.acquire()
             if len(self.data_load_queue) > self.data_load_capacity:
                 self.cv_full.wait()
-            self.data_load_queue.append(get_data(image_ids))
+            self.data_load_queue.append(data)
             self.cv_empty.notify()
             self.cv_full.release()
 
